@@ -16,16 +16,60 @@ export default function Home() {
 
   const choiceData = {
     4: {
-      a: { text: "Nasi Uduk & Ayam", p: 15 },
-      b: { text: "Roti Telur & Susu", p: 25 },
+      a: { text: "Nasi Uduk dan Ayam Goreng", p: 15 },
+      b: { text: "Roti Telur dan Susu", p: 25 },
       next: 5,
     },
     9: {
-      a: { text: "Es Boba Manis", p: 10 },
-      b: { text: "Air Putih Segar", p: 20 },
+      a: { text: "Es Boba", p: 10 },
+      b: { text: "Air Putih", p: 20 },
       next: 10,
     },
-    // ... data pilihan lainnya tetap sama ...
+    15: {
+      a: { text: "Makan Gorengan", p: 10 },
+      b: { text: "Salad Buah", p: 25 },
+      next: 16,
+    },
+    20: {
+      a: { text: "Mie Level", p: 10 },
+      b: { text: "Nasi Ayam Bakar dan Sayur", p: 20 },
+      next: 21,
+    },
+    25: {
+      a: { text: "Mie Level", p: 5 },
+      b: { text: "Nasi Ayam Bakar dan Sayur", p: 10 },
+      next: 26,
+    },
+    30: {
+      a: { text: "Tetap Makan", p: 5 },
+      b: { text: "Tidak Jadi Makan", p: 20 },
+      next: 31,
+    },
+    36: {
+      a: { text: "Soto Ayam dan Jus Buah", p: 25 },
+      b: { text: "Bakso Kenyal dan Es Warna-warni", p: 5 },
+      next: 37,
+    },
+    40: {
+      a: { text: "Es Krim Gelato", p: 15 },
+      b: { text: "Es Kopi Susu", p: 5 },
+      next: 41,
+    },
+    45: {
+      a: { text: "Ceker Mercon", p: 10 },
+      b: { text: "Nasi Bento", p: 25 },
+      next: 46,
+    },
+    48: {
+      a: { text: "Cilok Bumbu Pedas", p: 5 },
+      b: { text: "Roti Isi Tuna", p: 30 },
+      next: 49,
+    },
+    54: {
+      a: { text: "Cireng Kuah Pedas", p: 5 },
+      b: { text: "Ubi Madu", p: 40 },
+      next: 55,
+    },
   };
 
   const saveScore = async () => {
@@ -38,7 +82,7 @@ export default function Home() {
       });
       fetchLeaderboard();
       setStep("leaderboard");
-      alert('Berhasil Menyimpan');
+      alert("Berhasil Menyimpan");
     } catch (err) {
       console.error("Gagal simpan skor:", err);
     } finally {
