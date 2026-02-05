@@ -177,12 +177,12 @@ export default function Home() {
                         choiceData[currentPage].a.page,
                       )
                     }
-                    className="flex items-center gap-4 p-4 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl hover:border-indigo-400 active:scale-95 transition-all group"
+                    className="flex items-center gap-2 md:gap-4 p-3 md:p-4 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl hover:border-indigo-400 active:scale-95 transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black shadow-md shadow-indigo-200">
+                    <div className="md:w-10 md:h-10 w-8 h-8 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black shadow-md shadow-indigo-200">
                       A
                     </div>
-                    <span className="flex-1 text-left font-bold text-zinc-700 text-sm leading-tight">
+                    <span className="flex-1 text-left font-bold text-zinc-700 text-[10px] md:text-sm leading-tight">
                       {choiceData[currentPage].a.text}
                     </span>
                     {/* <span className="text-indigo-400 font-black text-xs">
@@ -197,12 +197,12 @@ export default function Home() {
                         choiceData[currentPage].b.page,
                       )
                     }
-                    className="flex items-center gap-4 p-4 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl hover:border-emerald-400 active:scale-95 transition-all group"
+                    className="flex items-center gap-3 md:gap-4 p-3 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl hover:border-emerald-400 active:scale-95 transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-md shadow-emerald-200">
+                    <div className="md:w-10 md:h-10 w-8 h-8  rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-md shadow-emerald-200">
                       B
                     </div>
-                    <span className="flex-1 text-left font-bold text-zinc-700 text-sm leading-tight">
+                    <span className="flex-1 text-left font-bold text-zinc-700 text-sm leading-tight text-[10px] md:text-sm">
                       {choiceData[currentPage].b.text}
                     </span>
                     {/* <span className="text-emerald-400 font-black text-xs">
