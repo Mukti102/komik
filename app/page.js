@@ -2,6 +2,7 @@
 import { useState, useRef, forwardRef } from "react";
 import HTMLFlipBook from "react-pageflip";
 import Halaman from "./components/halaman";
+import choiceData from "./data";
 
 export default function Home() {
   const [step, setStep] = useState("cover");
@@ -13,64 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const totalHalaman = 69;
-
-  const choiceData = {
-    4: {
-      a: { text: "Nasi Uduk dan Ayam Goreng", p: 15 },
-      b: { text: "Roti Telur dan Susu", p: 25 },
-      next: 5,
-    },
-    9: {
-      a: { text: "Es Boba", p: 10 },
-      b: { text: "Air Putih", p: 20 },
-      next: 10,
-    },
-    15: {
-      a: { text: "Makan Gorengan", p: 10 },
-      b: { text: "Salad Buah", p: 25 },
-      next: 16,
-    },
-    20: {
-      a: { text: "Mie Level", p: 10 },
-      b: { text: "Nasi Ayam Bakar dan Sayur", p: 20 },
-      next: 21,
-    },
-    25: {
-      a: { text: "Mie Level", p: 5 },
-      b: { text: "Nasi Ayam Bakar dan Sayur", p: 10 },
-      next: 26,
-    },
-    30: {
-      a: { text: "Tetap Makan", p: 5 },
-      b: { text: "Tidak Jadi Makan", p: 20 },
-      next: 31,
-    },
-    36: {
-      a: { text: "Soto Ayam dan Jus Buah", p: 25 },
-      b: { text: "Bakso Kenyal dan Es Warna-warni", p: 5 },
-      next: 37,
-    },
-    40: {
-      a: { text: "Es Krim Gelato", p: 15 },
-      b: { text: "Es Kopi Susu", p: 5 },
-      next: 41,
-    },
-    45: {
-      a: { text: "Ceker Mercon", p: 10 },
-      b: { text: "Nasi Bento", p: 25 },
-      next: 46,
-    },
-    48: {
-      a: { text: "Cilok Bumbu Pedas", p: 5 },
-      b: { text: "Roti Isi Tuna", p: 30 },
-      next: 49,
-    },
-    54: {
-      a: { text: "Cireng Kuah Pedas", p: 5 },
-      b: { text: "Ubi Madu", p: 40 },
-      next: 55,
-    },
-  };
+  console.log(currentPage);
 
   const saveScore = async () => {
     setLoading(true);
@@ -102,14 +46,18 @@ export default function Home() {
 
   const jumpTo = (pageNum) => {
     if (bookRef.current) {
-      bookRef.current.pageFlip().flip(pageNum - 1);
+      const flipBook = bookRef.current.pageFlip();
+      // turnToPage biasanya lebih stabil untuk lompatan jauh
+      flipBook.turnToPage(pageNum - 1);
       setCurrentPage(pageNum);
     }
   };
 
   const handleChoice = (points, next) => {
     setScore((prev) => prev + points);
-    jumpTo(next);
+    setTimeout(() => {
+      jumpTo(next);
+    }, 500);
   };
 
   return (
@@ -195,16 +143,22 @@ export default function Home() {
               size="stretch"
               minWidth={280}
               maxWidth={500}
-              minHeight={100}
+              minHeight={400}
+              usePortrait={true}
               maxHeight={700}
-              showCover={false}
-              onFlip={(e) => setCurrentPage(e.data + 1)}
+              showCover={true}
+              onFlip={(e) => {
+                const newPage = e.data + 1;
+                setCurrentPage(newPage);
+              }}
+              // Tambahkan ini untuk mencegah user klik area buku untuk pindah halaman
+              clickEventForward={false}
               ref={bookRef}
-              className="comic-book shadow-2xl rounded-[2rem]"
+              className="comic-book shadow-2xl"
               mobileScrollSupport={true}
             >
               {[...Array(totalHalaman)].map((_, i) => (
-                <Halaman key={i + 1} number={i + 1} />
+                <Halaman key={i + 1} number={i} />
               ))}
             </HTMLFlipBook>
           </div>
@@ -220,7 +174,7 @@ export default function Home() {
                     onClick={() =>
                       handleChoice(
                         choiceData[currentPage].a.p,
-                        choiceData[currentPage].next,
+                        choiceData[currentPage].a.page,
                       )
                     }
                     className="flex items-center gap-4 p-4 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl hover:border-indigo-400 active:scale-95 transition-all group"
@@ -240,7 +194,7 @@ export default function Home() {
                     onClick={() =>
                       handleChoice(
                         choiceData[currentPage].b.p,
-                        choiceData[currentPage].next,
+                        choiceData[currentPage].b.page,
                       )
                     }
                     className="flex items-center gap-4 p-4 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl hover:border-emerald-400 active:scale-95 transition-all group"
