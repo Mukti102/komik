@@ -17,7 +17,6 @@ export default function Home() {
 
   useEffect(() => {
     let interval = null;
-    fetchLeaderboard()
     if (isActive) {
       interval = setInterval(() => {
         setSeconds((prev) => prev + 1);
