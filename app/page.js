@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, forwardRef } from "react";
+import { useState, useRef, forwardRef, useEffect } from "react";
 import HTMLFlipBook from "react-pageflip";
 import Halaman from "./components/halaman";
 import choiceData from "./data";
@@ -12,21 +12,48 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const bookRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false);
 
-  const totalHalaman = 69;
-  console.log(currentPage);
+  useEffect(() => {
+    let interval = null;
+    fetchLeaderboard()
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const formatTime = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const startAdventure = () => {
+    setStep("comic");
+    setIsActive(true); // Mulai timer saat masuk ke komik
+  };
+
+  const totalHalaman = 70;
 
   const saveScore = async () => {
+    setIsActive(false); // Hentikan timer saat selesai
     setLoading(true);
     try {
       await fetch("/api/leaderboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama, skor: score }),
+        // Kirim 'waktu' ke database
+        body: JSON.stringify({ nama, skor: score, duration: seconds }),
       });
       fetchLeaderboard();
       setStep("leaderboard");
-      alert("Berhasil Menyimpan");
+      alert("Berhasil Menyimpan!");
     } catch (err) {
       console.error("Gagal simpan skor:", err);
     } finally {
@@ -39,6 +66,7 @@ export default function Home() {
       const res = await fetch("/api/leaderboard");
       const data = await res.json();
       setLeaderboard(data);
+      console.log(data);
     } catch (err) {
       console.error("Gagal ambil data:", err);
     }
@@ -69,6 +97,12 @@ export default function Home() {
             <span className="text-xl">👤</span>
             <span className="font-black text-sm text-zinc-600 truncate max-w-[80px]">
               {nama}
+            </span>
+          </div>
+          <div className="bg-white px-4 py-2 rounded-2xl shadow-lg border-2 border-indigo-400 flex items-center gap-2">
+            <span className="text-lg">⏱️</span>
+            <span className="font-mono font-black text-indigo-600">
+              {formatTime(seconds)}
             </span>
           </div>
           <div className="bg-[#FF8B8B] px-5 py-2 rounded-2xl shadow-lg border-2 border-white flex items-center gap-2 animate-bounce-short">
@@ -122,8 +156,10 @@ export default function Home() {
               onChange={(e) => setNama(e.target.value)}
             />
             <button
+              // disabled={!nama}
+              // onClick={() => setStep("comic")}
               disabled={!nama}
-              onClick={() => setStep("comic")}
+              onClick={startAdventure}
               className="w-full bg-[#4D96FF] text-white py-5 rounded-[2rem] font-black text-lg shadow-[0_6px_0_#3678db] disabled:opacity-30 disabled:shadow-none transition-all active:translate-y-1 active:shadow-none"
             >
               GASSS! 🚀
@@ -235,30 +271,54 @@ export default function Home() {
                 🏆 10 Terbaik 🏆
               </h2>
             </div>
+
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
               {leaderboard.map((item, i) => (
                 <div
                   key={i}
-                  className={`flex justify-between items-center p-4 rounded-2xl border-2 ${i === 0 ? "bg-yellow-50 border-yellow-200 animate-pulse" : "bg-zinc-50 border-transparent"}`}
+                  className={`flex justify-between items-center p-4 rounded-2xl border-2 ${
+                    i === 0
+                      ? "bg-yellow-50 border-yellow-200 animate-pulse"
+                      : "bg-zinc-50 border-transparent"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${i === 0 ? "bg-yellow-400 text-white" : "bg-zinc-200 text-zinc-500"}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${
+                        i === 0
+                          ? "bg-yellow-400 text-white"
+                          : "bg-zinc-200 text-zinc-500"
+                      }`}
                     >
                       {i + 1}
                     </span>
-                    <span className="font-bold text-zinc-700 capitalize">
-                      {item.nama}
+                    <div className="flex flex-col">
+                      <span className="font-bold text-zinc-700 capitalize leading-tight">
+                        {item.nama}
+                      </span>
+                      {/* MENAMPILKAN DURASI */}
+                      <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1">
+                        ⏱️ {formatTime(item.duration || 0)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="font-black text-[#4D96FF] text-lg block leading-none">
+                      {item.skor}
+                    </span>
+                    <span className="text-[8px] font-black text-zinc-300 uppercase tracking-widest">
+                      Pts
                     </span>
                   </div>
-                  <span className="font-black text-[#4D96FF]">{item.skor}</span>
                 </div>
               ))}
             </div>
+
             <div className="p-6 border-t border-zinc-100">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full py-4 bg-zinc-800 text-white rounded-[1.5rem] font-black text-sm uppercase"
+                className="w-full py-4 bg-zinc-800 text-white rounded-[1.5rem] font-black text-sm uppercase transition-transform active:scale-95"
               >
                 Main Lagi 🔄
               </button>
