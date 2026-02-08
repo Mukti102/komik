@@ -32,3 +32,14 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ message: "Skor berhasil disimpan", data });
 }
+
+export async function DELETE() {
+  // Menghapus semua baris di Supabase (Pastikan kebijakan RLS mengizinkan atau gunakan Service Role Key)
+  const { error } = await supabase.from("leaderboards").delete().neq("id", 0); // Trik untuk menghapus semua baris (menghapus yang ID-nya bukan 0)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: "Data cleared successfully" });
+}

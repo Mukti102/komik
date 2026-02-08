@@ -71,6 +71,58 @@ export default function Home() {
     }
   };
 
+  const downloadCSV = () => {
+    if (leaderboard.length === 0) return alert("Data kosong!");
+
+    const headers = [
+      "Peringkat",
+      "Nama",
+      "Skor",
+      "Durasi (Detik)",
+      "Waktu Format",
+    ];
+    const rows = leaderboard.map((item, index) => [
+      index + 1,
+      item.nama,
+      item.skor,
+      item.duration,
+      formatTime(item.duration),
+    ]);
+
+    const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `Laporan_Misi_Makan_Sehat_${new Date().toLocaleDateString()}.csv`,
+    );
+    link.click();
+  };
+
+  const resetDatabase = async () => {
+    if (
+      !confirm(
+        "APAKAH ANDA YAKIN? Semua data leaderboard akan DIHAPUS PERMANEN untuk sesi baru.",
+      )
+    )
+      return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/leaderboard", { method: "DELETE" });
+      if (res.ok) {
+        setLeaderboard([]);
+        alert("Leaderboard telah dibersihkan! Siap untuk sesi baru.");
+      }
+    } catch (err) {
+      alert("Gagal mereset data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const jumpTo = (pageNum) => {
     if (bookRef.current) {
       const flipBook = bookRef.current.pageFlip();
@@ -269,6 +321,21 @@ export default function Home() {
               <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
                 🏆 10 Terbaik 🏆
               </h2>
+            </div>
+
+            <div className="bg-zinc-100 p-3 flex gap-2 border-b border-zinc-200">
+              <button
+                onClick={downloadCSV}
+                className="flex-1 bg-blue-500 text-white py-2 rounded-xl text-[10px] font-black uppercase"
+              >
+                📥 Download Data
+              </button>
+              <button
+                onClick={resetDatabase}
+                className="flex-1 bg-red-500 text-white py-2 rounded-xl text-[10px] font-black uppercase"
+              >
+                🗑️ Reset Leaderboard
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
