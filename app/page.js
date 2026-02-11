@@ -141,6 +141,13 @@ export default function Home() {
           behavior: "smooth",
         });
       }, 300);
+    } else {
+      setTimeout(() => {
+        window.scrollTo({
+          top:0,
+          behavior: "smooth",
+        });
+      }, 300);
     }
   }, [currentPage, step]);
 
