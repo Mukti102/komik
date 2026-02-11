@@ -14,6 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
+  const interactiveRef = useRef(null);
 
   useEffect(() => {
     let interval = null;
@@ -132,6 +133,17 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    if (step === "comic" && choiceData[currentPage]) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 300);
+    }
+  }, [currentPage, step]);
+
   const handleChoice = (points, next) => {
     setScore((prev) => prev + points);
     setTimeout(() => {
@@ -249,8 +261,7 @@ export default function Home() {
             </HTMLFlipBook>
           </div>
           {/* --- INTERACTIVE DECK (BOTTOM) --- */}
-        <div className="px-4 pb-6">
-
+          <div ref={interactiveRef} className="px-4 pb-6">
             {choiceData[currentPage] ? (
               <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border-t-4 border-zinc-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
                 <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-[0.3em] mb-1">
