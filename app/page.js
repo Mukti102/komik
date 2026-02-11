@@ -223,7 +223,8 @@ export default function Home() {
       {step === "comic" && (
         <div className="flex-1 w-full flex flex-col items-center justify-center gap-4 p-0">
           {/* AREA BUKU - Disesuaikan agar pas di layar HP */}
-          <div className="w-full flex-1  h-[70vh] md:h-[60vh] flex items-center justify-center">
+         <div className="w-full h-[65vh] md:h-[60vh] flex items-center justify-center">
+
             <HTMLFlipBook
               width={300}
               height={450}
