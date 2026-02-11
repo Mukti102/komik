@@ -140,7 +140,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center bg-[#FFF9F0] font-sans text-zinc-800  select-none overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-[#FFF9F0] font-sans text-zinc-800 select-none">
       {/* --- FLOATING STATUS (TOP) --- */}
       {step === "comic" && (
         <div className="w-full px-6 pt-6 pb-2 flex justify-between items-center z-50">
@@ -192,7 +192,7 @@ export default function Home() {
 
       {/* 2. INPUT NAMA */}
       {step === "input" && (
-        <div className="flex flex-col items-center justify-center h-full w-full px-10">
+        <div className="flex mt-32 flex-col items-center justify-center h-full w-full px-10">
           <div className="bg-white p-8 rounded-[3rem] shadow-2xl w-full border-4 border-[#FFD93D] relative">
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-5xl bg-white rounded-full p-2 shadow-md">
               👋
@@ -221,29 +221,27 @@ export default function Home() {
 
       {/* 3. MODE KOMIK (STRETCHED FOR MOBILE) */}
       {step === "comic" && (
-        <div className="flex-1 w-full flex flex-col items-center justify-center gap-4 p-0">
-          {/* AREA BUKU - Disesuaikan agar pas di layar HP */}
-         <div className="w-full h-[65vh] md:h-[60vh] flex items-center justify-center">
-
+        <div className="flex flex-col flex-1">
+          {/* AREA BUKU */}
+          <div className="flex-1 flex items-center justify-center px-4">
             <HTMLFlipBook
-              width={300}
-              height={450}
+              width={320}
+              height={480}
               size="stretch"
               minWidth={280}
               maxWidth={500}
               minHeight={400}
-              usePortrait={true}
-              maxHeight={700}
-              showCover={true}
+              maxHeight={650}
+              usePortrait
+              showCover
+              clickEventForward={false}
+              mobileScrollSupport
+              ref={bookRef}
+              className="comic-book shadow-2xl"
               onFlip={(e) => {
                 const newPage = e.data + 1;
                 setCurrentPage(newPage);
               }}
-              // Tambahkan ini untuk mencegah user klik area buku untuk pindah halaman
-              clickEventForward={false}
-              ref={bookRef}
-              className="comic-book shadow-2xl"
-              mobileScrollSupport={true}
             >
               {[...Array(totalHalaman)].map((_, i) => (
                 <Halaman key={i + 1} number={i} />
@@ -251,7 +249,8 @@ export default function Home() {
             </HTMLFlipBook>
           </div>
           {/* --- INTERACTIVE DECK (BOTTOM) --- */}
-          <div className="w-full max-w-[600px] z-10 px-2">
+        <div className="px-4 pb-6">
+
             {choiceData[currentPage] ? (
               <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border-t-4 border-zinc-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
                 <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-[0.3em] mb-1">
