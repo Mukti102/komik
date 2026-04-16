@@ -151,6 +151,18 @@ export default function Home() {
     }
   }, [currentPage, step]);
 
+//   // Efek untuk auto-jump ke halaman terakhir (finish) jika mencapai halaman tertentu
+// useEffect(() => {
+//   const finishPages = [62, 66, 69];
+//   if (finishPages.includes(currentPage)) {
+//     // Beri sedikit delay agar user sempat melihat halaman tersebut sebentar sebelum loncat
+//     const timer = setTimeout(() => {
+//       jumpTo(totalHalaman); 
+//     }, 1500); // 1.5 detik delay, bisa disesuaikan
+//     return () => clearTimeout(timer);
+//   }
+// }, [currentPage]);
+
   const handleChoice = (points, next) => {
     setScore((prev) => prev + points);
     setTimeout(() => {
@@ -317,16 +329,17 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className=" flex items-center justify-center">
-                {currentPage === totalHalaman && (
-                  <button
-                    onClick={saveScore}
-                    className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-black text-lg shadow-[0_5px_0_#d95252] active:translate-y-1 active:shadow-none"
-                  >
-                    {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN"}!
-                  </button>
-                )}
-              </div>
+              <div className="flex items-center justify-center">
+      {/* Tombol Simpan muncul jika di halaman 70 ATAU halaman jalur cepat */}
+      {(currentPage === totalHalaman || [62, 66, 69].includes(currentPage)) && (
+        <button
+          onClick={saveScore}
+          className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-black text-lg shadow-[0_5px_0_#d95252] active:translate-y-1 active:shadow-none animate-bounce-short"
+        >
+          {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
+        </button>
+      )}
+    </div>
             )}
           </div>
         </div>

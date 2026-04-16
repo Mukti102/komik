@@ -7,7 +7,7 @@ const Halaman = forwardRef(({ number }, ref) => {
       <div className="h-full flex flex-col p-2">
         <div className="flex-1 bg-[#F9F9F9] flex items-center justify-center relative rounded-[1rem] p-0 overflow-hidden border-2  border-zinc-200">
           <img
-            src={`/komik/pages/${number}.png`}
+            src={`/komik/pages/${number}.jpg`}
             alt={`Halaman ${number}`}
             className="w-full h-full object-cover shadow-sm"
             onError={(e) => {
