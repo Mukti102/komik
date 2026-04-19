@@ -15,10 +15,16 @@ export default function Home() {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const interactiveRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
 
 
-
+useEffect(() => {
+  const checkSize = () => setIsMobile(window.innerWidth < 768);
+  checkSize();
+  window.addEventListener('resize', checkSize);
+  return () => window.removeEventListener('resize', checkSize);
+}, []);
 
   useEffect(() => {
     let interval = null;
@@ -273,8 +279,7 @@ export default function Home() {
 
       {/* 3. MODE KOMIK (STRETCHED FOR MOBILE) */}
       {step === "comic" && (
-  <>
-    {/* --- VERSION: MOBILE (Muncul hanya di layar kecil) --- */}
+        isMobile ? (
     <div ref={interactiveRef} className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden">
       {/* AREA BUKU MOBILE */}
       <div className="flex-1 flex items-center justify-center px-4 min-h-0">
@@ -333,11 +338,9 @@ export default function Home() {
           </div>
         )}
       </div>
-    </div>
-
-    {/* --- VERSION: DESKTOP (Muncul hanya di layar md ke atas) --- */}
-    <div className="hidden md:flex flex-col h-[170dvh]  w-full overflow-hidden bg-zinc-50">
-      {/* AREA BUKU DESKTOP */}
+    </div>)
+    :
+    (<div className="hidden md:flex flex-col h-[170dvh]  w-full overflow-hidden bg-zinc-50">
       <div className="flex-1  flex items-center  justify-center py-0 p-4 ">
         <HTMLFlipBook
           width={400} // Desktop lebih besar
@@ -404,8 +407,7 @@ export default function Home() {
           })()}
         </div>
       </div>
-    </div>
-  </>
+    </div>)
 )}
 
       {step === "leaderboard" && (
