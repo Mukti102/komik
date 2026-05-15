@@ -306,7 +306,7 @@ export default function Home() {
                     const nextPage = e.data + 1;
 
                     // ❌ STOP kalau sudah di finish page
-                    if (finishPages.includes(currentPage)) {
+                    if (finishPagesMobile.includes(currentPage)) {
                       bookRef.current?.pageFlip().turnToPage(currentPage - 1);
                       return;
                     }
