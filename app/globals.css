@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.stf__parent {
+  touch-action: none !important;
+}
+
+.finish-lock .stf__parent {
+  pointer-events: none !important;
+  touch-action: none !important;
+}
