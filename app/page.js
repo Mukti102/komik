@@ -16,15 +16,26 @@ export default function Home() {
   const [isActive, setIsActive] = useState(false);
   const interactiveRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const totalHalaman = 70;
+  const finishPagesMobile = [64, 68, 71];
+  const finishPagesDesktop = [62, 66, 69];
 
+  const isFinishPageMobile =
+    finishPagesMobile.includes(currentPage) || finishPagesMobile.includes(currentPage + 1);
 
+    const isFinishPageDesktop =
+    finishPagesDesktop.includes(currentPage) || finishPagesDesktop.includes(currentPage + 1);
 
-useEffect(() => {
-  const checkSize = () => setIsMobile(window.innerWidth < 768);
-  checkSize();
-  window.addEventListener('resize', checkSize);
-  return () => window.removeEventListener('resize', checkSize);
-}, []);
+    useEffect(() => {
+      console.log("Current Page:", currentPage);
+    }, [currentPage, isFinishPageDesktop, isFinishPageMobile]);
+
+  useEffect(() => {
+    const checkSize = () => setIsMobile(window.innerWidth < 768);
+    checkSize();
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
 
   useEffect(() => {
     let interval = null;
@@ -48,8 +59,6 @@ useEffect(() => {
     setStep("comic");
     setIsActive(true); // Mulai timer saat masuk ke komik
   };
-
-  const totalHalaman = 70;
 
   const saveScore = async () => {
     setIsActive(false); // Hentikan timer saat selesai
@@ -152,18 +161,14 @@ useEffect(() => {
           behavior: "smooth",
         });
       }, 300);
-
-    }else if(
-      hasActiveData && interactiveRef.current
-    ){
-       setTimeout(() => {
-      interactiveRef.current.scrollIntoView({ 
-        behavior: "smooth", 
-        block: "end" 
-      });
-    }, 100);
-    }
-     else {
+    } else if (hasActiveData && interactiveRef.current) {
+      setTimeout(() => {
+        interactiveRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }, 100);
+    } else {
       setTimeout(() => {
         window.scrollTo({
           top: 0,
@@ -191,11 +196,6 @@ useEffect(() => {
       jumpTo(next);
     }, 500);
   };
-
-
- 
-
-
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FFF9F0] font-sans text-zinc-800 select-none">
@@ -278,137 +278,196 @@ useEffect(() => {
       )}
 
       {/* 3. MODE KOMIK (STRETCHED FOR MOBILE) */}
-      {step === "comic" && (
-        isMobile ? (
-    <div ref={interactiveRef} className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden">
-      {/* AREA BUKU MOBILE */}
-      <div className="flex-1 flex items-center justify-center px-4 min-h-0">
-        <HTMLFlipBook
-          width={320}
-          height={480}
-          size="stretch"
-          minWidth={280}
-          maxWidth={500}
-          minHeight={400}
-          maxHeight={650}
-          usePortrait={true}
-          showCover={true}
-          mobileScrollSupport={true}
-          ref={bookRef}
-          className="comic-book shadow-2xl"
-          onFlip={(e) => setCurrentPage(e.data + 1)}
-        >
-          {[...Array(totalHalaman)].map((_, i) => (
-            <Halaman key={i + 1} number={i} />
-          ))}
-        </HTMLFlipBook>
-      </div>
+      {step === "comic" &&
+        (isMobile ? (
+          <div
+            ref={interactiveRef}
+            className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden"
+          >
+            {/* AREA BUKU MOBILE */}
+            <div
+              className={`flex-1  flex items-center justify-center px-4 min-h-0`}
+            >
+              <div className={`${isFinishPageMobile ? "pointer-events-none finish-lock" : ""}`}>
+                <HTMLFlipBook
+                  width={320}
+                  height={480}
+                  size="stretch"
+                  minWidth={280}
+                  maxWidth={500}
+                  minHeight={400}
+                  maxHeight={650}
+                  usePortrait={true}
+                  showCover={true}
+                  mobileScrollSupport={true}
+                  ref={bookRef}
+                  className="comic-book shadow-2xl"
+                  onFlip={(e) => {
+                    const nextPage = e.data + 1;
 
-      {/* INTERACTIVE DECK MOBILE */}
-      <div ref={interactiveRef}  className="px-4 pb-6 shrink-0">
-        {choiceData[currentPage] ? (
-          <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border-t-4 border-zinc-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
-            <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-[0.3em] mb-1">
-              Pilih Salah Satu
-            </div>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => handleChoice(choiceData[currentPage].a.p, choiceData[currentPage].a.page)}
-                className="flex-1 flex items-center gap-2 p-3 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl active:scale-95 transition-all"
-              >
-                <div className="w-8 h-8 shrink-0 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xs">A</div>
-                <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">{choiceData[currentPage].a.text}</span>
-              </button>
-              <button
-                onClick={() => handleChoice(choiceData[currentPage].b.p, choiceData[currentPage].b.page)}
-                className="flex-1 flex items-center gap-2 p-3 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl active:scale-95 transition-all"
-              >
-                <div className="w-8 h-8 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs">B</div>
-                <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">{choiceData[currentPage].b.text}</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center min-h-[60px]">
-            {(currentPage === totalHalaman || [63, 67, 70].includes(currentPage)) && (
-              <button onClick={saveScore} className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-black text-lg shadow-[0_5px_0_#d95252] animate-bounce-short">
-                {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>)
-    :
-    (<div className="hidden md:flex flex-col h-[170dvh]  w-full overflow-hidden bg-zinc-50">
-      <div className="flex-1  flex items-center  justify-center py-0 p-4 ">
-        <HTMLFlipBook
-          width={400} // Desktop lebih besar
-          height={600}
-          size="stretch"
-          minWidth={400}
-          maxWidth={1000}
-          minHeight={500}
-          maxHeight={800}
-          usePortrait={false} // Desktop pakai mode 2 halaman (landscape)
-          showCover={true}
-          ref={bookRef}
-          className="comic-book shadow-2xl"
-          onFlip={(e) => setCurrentPage(e.data + 1)}
-        >
-          {[...Array(totalHalaman)].map((_, i) => (
-            <Halaman key={i + 1} number={i} />
-          ))}
-        </HTMLFlipBook>
-      </div>
+                    // ❌ STOP kalau sudah di finish page
+                    if (finishPages.includes(currentPage)) {
+                      bookRef.current?.pageFlip().turnToPage(currentPage - 1);
+                      return;
+                    }
 
-      {/* INTERACTIVE DECK DESKTOP */}
-      <div ref={interactiveRef} className="px-4">
-        <div className="max-w-4xl mx-auto">
-          {(() => {
-            const activeData = choiceData[currentPage] || choiceData[currentPage + 1];
-            if (activeData) {
-              return (
-                <div className="bg-white p-6 rounded-[3rem] shadow-2xl border-t-4 border-zinc-50 flex flex-col gap-4 animate-in slide-in-from-bottom-5">
-                  <div className="text-center font-black text-xs text-slate-400 uppercase tracking-[0.4em] mb-1">
-                    Pilih Langkah Berikutnya
+                    setCurrentPage(nextPage);
+                  }}
+                >
+                  {[...Array(totalHalaman)].map((_, i) => (
+                    <Halaman key={i + 1} number={i} />
+                  ))}
+                </HTMLFlipBook>
+              </div>
+            </div>
+
+            {/* INTERACTIVE DECK MOBILE */}
+            <div ref={interactiveRef} className="px-4 pb-6 shrink-0">
+              {choiceData[currentPage] ? (
+                <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border-t-4 border-zinc-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
+                  <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-[0.3em] mb-1">
+                    Pilih Salah Satu
                   </div>
-                  <div className="flex gap-6 justify-center">
+                  <div className="flex gap-3 justify-center">
                     <button
-                      onClick={() => handleChoice(activeData.a.p, activeData.a.page)}
-                      className="flex-1 flex items-center gap-4 p-5 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-[2rem] hover:border-indigo-400 hover:bg-indigo-50 transition-all active:scale-95"
+                      onClick={() =>
+                        handleChoice(
+                          choiceData[currentPage].a.p,
+                          choiceData[currentPage].a.page,
+                        )
+                      }
+                      className="flex-1 flex items-center gap-2 p-3 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl active:scale-95 transition-all"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xl shadow-lg">A</div>
-                      <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">{activeData.a.text}</span>
+                      <div className="w-8 h-8 shrink-0 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xs">
+                        A
+                      </div>
+                      <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">
+                        {choiceData[currentPage].a.text}
+                      </span>
                     </button>
                     <button
-                      onClick={() => handleChoice(activeData.b.p, activeData.b.page)}
-                      className="flex-1 flex items-center gap-4 p-5 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-[2rem] hover:border-emerald-400 hover:bg-emerald-50 transition-all active:scale-95"
+                      onClick={() =>
+                        handleChoice(
+                          choiceData[currentPage].b.p,
+                          choiceData[currentPage].b.page,
+                        )
+                      }
+                      className="flex-1 flex items-center gap-2 p-3 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl active:scale-95 transition-all"
                     >
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xl shadow-lg">B</div>
-                      <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">{activeData.b.text}</span>
+                      <div className="w-8 h-8 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs">
+                        B
+                      </div>
+                      <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">
+                        {choiceData[currentPage].b.text}
+                      </span>
                     </button>
                   </div>
                 </div>
-              );
-            } else {
-              const isFinishPage = [totalHalaman, 63, 67, 70].some(p => p === currentPage || p === currentPage + 1);
-              if (isFinishPage) {
-                return (
-                  <div className="flex justify-center max-w-md mx-auto">
-                    <button onClick={saveScore} className="w-full bg-[#FF6B6B] text-white py-6 rounded-[2rem] font-black text-2xl shadow-[0_8px_0_#d95252] hover:bg-[#ff5a5a] active:translate-y-1 active:shadow-none transition-all">
+              ) : (
+                <div className="flex items-center justify-center min-h-[60px]">
+                  {(currentPage === totalHalaman ||
+                    [63, 67, 70].includes(currentPage)) && (
+                    <button
+                      onClick={saveScore}
+                      className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-black text-lg shadow-[0_5px_0_#d95252] animate-bounce-short"
+                    >
                       {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
                     </button>
-                  </div>
-                );
-              }
-              return null;
-            }
-          })()}
-        </div>
-      </div>
-    </div>)
-)}
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="hidden md:flex flex-col h-[170dvh]  w-full overflow-hidden bg-zinc-50">
+            <div className="flex-1  flex items-center  justify-center py-0 p-4 ">
+              <div className={`${isFinishPageDesktop ? "pointer-events-none finish-lock" : ""}`}>
+              <HTMLFlipBook
+                width={400} // Desktop lebih besar
+                height={600}
+                size="stretch"
+                minWidth={400}
+                maxWidth={1000}
+                minHeight={500}
+                maxHeight={800}
+                usePortrait={false} // Desktop pakai mode 2 halaman (landscape)
+                showCover={true}
+                ref={bookRef}
+                className="comic-book shadow-2xl"
+                onFlip={(e) => setCurrentPage(e.data + 1)}
+              >
+                {[...Array(totalHalaman)].map((_, i) => (
+                  <Halaman key={i + 1} number={i} />
+                ))}
+              </HTMLFlipBook>
+              </div>
+            </div>
+
+            {/* INTERACTIVE DECK DESKTOP */}
+            <div ref={interactiveRef} className="px-4">
+              <div className="max-w-4xl mx-auto">
+                {(() => {
+                  const activeData =
+                    choiceData[currentPage] || choiceData[currentPage + 1];
+                  if (activeData) {
+                    return (
+                      <div className="bg-white p-6 rounded-[3rem] shadow-2xl border-t-4 border-zinc-50 flex flex-col gap-4 animate-in slide-in-from-bottom-5">
+                        <div className="text-center font-black text-xs text-slate-400 uppercase tracking-[0.4em] mb-1">
+                          Pilih Langkah Berikutnya
+                        </div>
+                        <div className="flex gap-6 justify-center">
+                          <button
+                            onClick={() =>
+                              handleChoice(activeData.a.p, activeData.a.page)
+                            }
+                            className="flex-1 flex items-center gap-4 p-5 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-[2rem] hover:border-indigo-400 hover:bg-indigo-50 transition-all active:scale-95"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xl shadow-lg">
+                              A
+                            </div>
+                            <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">
+                              {activeData.a.text}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleChoice(activeData.b.p, activeData.b.page)
+                            }
+                            className="flex-1 flex items-center gap-4 p-5 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-[2rem] hover:border-emerald-400 hover:bg-emerald-50 transition-all active:scale-95"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xl shadow-lg">
+                              B
+                            </div>
+                            <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">
+                              {activeData.b.text}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    const isFinishPage = [totalHalaman, 63, 67, 70].some(
+                      (p) => p === currentPage || p === currentPage + 1,
+                    );
+                    if (isFinishPage) {
+                      return (
+                        <div className="flex justify-center max-w-md mx-auto">
+                          <button
+                            onClick={saveScore}
+                            className="w-full bg-[#FF6B6B] text-white py-6 rounded-[2rem] font-black text-2xl shadow-[0_8px_0_#d95252] hover:bg-[#ff5a5a] active:translate-y-1 active:shadow-none transition-all"
+                          >
+                            {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
+                          </button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
+        ))}
 
       {step === "leaderboard" && (
         <div className="flex flex-col items-center justify-center h-full w-full px-8 animate-in zoom-in duration-500">
