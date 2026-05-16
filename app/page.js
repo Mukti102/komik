@@ -17,11 +17,17 @@ export default function Home() {
   const interactiveRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const totalHalaman = 70;
-  const finishPages = [64, 68, 72];
+  const finishPages = [63, 66, 72];
   const finishPagesDekstop = [62, 66, 69];
 
-  const isFinishPageMobile =
-    finishPages.includes(currentPage) || finishPages.includes(currentPage + 1);
+  const isFinishPageMobile = finishPages.includes(currentPage);
+
+  useEffect(() => {
+    console.log("DEBUG");
+    console.log("currentPage:", currentPage, typeof currentPage);
+    console.log("finishPages:", finishPages);
+    console.log("includes:", finishPages.includes(currentPage));
+  }, [currentPage]);
 
   const isFinishPageDesktop =
     finishPagesDekstop.includes(currentPage) ||
@@ -300,16 +306,7 @@ export default function Home() {
                 mobileScrollSupport={true}
                 ref={bookRef}
                 className="comic-book shadow-2xl"
-                onFlip={(e) => {
-                  const nextPage = e.data + 1;
-
-                  if (isFinishPageMobile) {
-                    bookRef.current?.pageFlip().turnToPage(currentPage - 1);
-                    return;
-                  }
-
-                  setCurrentPage(nextPage);
-                }}
+                onFlip={(e) => setCurrentPage(e.data + 1)}
               >
                 {[...Array(totalHalaman)].map((_, i) => (
                   <Halaman key={i + 1} number={i} />
