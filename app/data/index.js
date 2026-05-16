@@ -5,7 +5,7 @@ const choiceData = {
     next: 4,
   },
   10: {
-    a: { text: "Es Boba", p: 10, page: 10 },
+    a: { text: "Es Boba", p: 10, page: 11 },
     b: { text: "Air Putih", p: 20, page: 22 },
     next: 9,
   },
