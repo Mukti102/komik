@@ -17,16 +17,16 @@ export default function Home() {
   const interactiveRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   const totalHalaman = 70;
-  const finishPages = [63, 66, 72];
-  const finishPagesDekstop = [62, 66, 69];
+  const finishPages = [63, 67, 72];
+  const finishPagesDekstop = [62,66];
 
   const isFinishPageMobile = finishPages.includes(currentPage);
 
   useEffect(() => {
     console.log("DEBUG");
     console.log("currentPage:", currentPage, typeof currentPage);
-    console.log("finishPages:", finishPages);
-    console.log("includes:", finishPages.includes(currentPage));
+    console.log("finishPages:", finishPagesDekstop);
+    console.log("includes:", finishPagesDekstop.includes(currentPage));
   }, [currentPage]);
 
   const isFinishPageDesktop =
