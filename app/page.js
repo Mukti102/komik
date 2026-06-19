@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, forwardRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import HTMLFlipBook from "react-pageflip";
 import Halaman from "./components/halaman";
 import choiceData from "./data";
@@ -18,8 +18,8 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const totalHalaman = 70;
   const finishPages = [63, 67, 72];
-  const finishPagesDekstop = [62,66];
-  const [postFinish, setPostFinish] = useState(null); // 'A'|'B'|'C' to show intermediate page before leaderboard
+  const finishPagesDekstop = [62, 66];
+  const [postFinish, setPostFinish] = useState(null);
 
   const isFinishPageMobile = finishPages.includes(currentPage);
 
@@ -44,9 +44,7 @@ export default function Home() {
   useEffect(() => {
     let interval = null;
     if (isActive) {
-      interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
+      interval = setInterval(() => setSeconds((prev) => prev + 1), 1000);
     } else {
       clearInterval(interval);
     }
@@ -61,21 +59,19 @@ export default function Home() {
 
   const startAdventure = () => {
     setStep("comic");
-    setIsActive(true); // Mulai timer saat masuk ke komik
+    setIsActive(true);
   };
 
   const saveScore = async () => {
-    setIsActive(false); // Hentikan timer saat selesai
+    setIsActive(false);
     setLoading(true);
     try {
       await fetch("/api/leaderboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Kirim 'waktu' ke database
         body: JSON.stringify({ nama, skor: score, duration: seconds }),
       });
-      fetchLeaderboard();       
-      // Decide post-finish page based on currentPage
+      fetchLeaderboard();
       const page = currentPage;
       let post = null;
       if ([62, 63].includes(page)) post = "A";
@@ -100,7 +96,6 @@ export default function Home() {
       const res = await fetch("/api/leaderboard");
       const data = await res.json();
       setLeaderboard(data);
-      console.log(data);
     } catch (err) {
       console.error("Gagal ambil data:", err);
     }
@@ -108,42 +103,21 @@ export default function Home() {
 
   const downloadCSV = () => {
     if (leaderboard.length === 0) return alert("Data kosong!");
-
-    const headers = [
-      "Peringkat",
-      "Nama",
-      "Skor",
-      "Durasi (Detik)",
-      "Waktu Format",
-    ];
+    const headers = ["Peringkat", "Nama", "Skor", "Durasi (Detik)", "Waktu Format"];
     const rows = leaderboard.map((item, index) => [
-      index + 1,
-      item.nama,
-      item.skor,
-      item.duration,
-      formatTime(item.duration),
+      index + 1, item.nama, item.skor, item.duration, formatTime(item.duration),
     ]);
-
     const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `Laporan_Misi_Makan_Sehat_${new Date().toLocaleDateString()}.csv`,
-    );
+    link.setAttribute("download", `Laporan_Misi_Makan_Sehat_${new Date().toLocaleDateString()}.csv`);
     link.click();
   };
 
   const resetDatabase = async () => {
-    if (
-      !confirm(
-        "APAKAH ANDA YAKIN? Semua data leaderboard akan DIHAPUS PERMANEN untuk sesi baru.",
-      )
-    )
-      return;
-
+    if (!confirm("APAKAH ANDA YAKIN? Semua data leaderboard akan DIHAPUS PERMANEN untuk sesi baru.")) return;
     setLoading(true);
     try {
       const res = await fetch("/api/leaderboard", { method: "DELETE" });
@@ -161,163 +135,122 @@ export default function Home() {
   const jumpTo = (pageNum) => {
     if (bookRef.current) {
       const flipBook = bookRef.current.pageFlip();
-      // turnToPage biasanya lebih stabil untuk lompatan jauh
       flipBook.turnToPage(pageNum - 1);
       setCurrentPage(pageNum);
     }
   };
+
   const hasActiveData = choiceData[currentPage] || choiceData[currentPage + 1];
 
   useEffect(() => {
     if (step === "comic" && choiceData[currentPage]) {
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 300);
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }), 300);
     } else if (hasActiveData && interactiveRef.current) {
-      setTimeout(() => {
-        interactiveRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }, 100);
+      setTimeout(() => interactiveRef.current.scrollIntoView({ behavior: "smooth", block: "end" }), 100);
     } else {
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-      }, 300);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 300);
     }
   }, [currentPage, step]);
 
-  //   // Efek untuk auto-jump ke halaman terakhir (finish) jika mencapai halaman tertentu
-  // useEffect(() => {
-  //   const finishPages = [62, 66, 69];
-  //   if (finishPages.includes(currentPage)) {
-  //     // Beri sedikit delay agar user sempat melihat halaman tersebut sebentar sebelum loncat
-  //     const timer = setTimeout(() => {
-  //       jumpTo(totalHalaman);
-  //     }, 1500); // 1.5 detik delay, bisa disesuaikan
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [currentPage]);
-
   const handleChoice = (points, next) => {
     setScore((prev) => prev + points);
-    setTimeout(() => {
-      jumpTo(next);
-    }, 500);
+    setTimeout(() => jumpTo(next), 500);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF9F0] font-sans text-zinc-800 select-none">
-      {/* --- FLOATING STATUS (TOP) --- */}
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800 select-none">
+
+      {/* HUD — hanya muncul saat mode komik */}
       {step === "comic" && (
-        <div className="w-full px-6 pt-6 pb-2 flex justify-between items-center z-50">
-          <div className="bg-white px-4 py-2 rounded-2xl shadow-lg border-2 border-[#FFD93D] flex items-center gap-2">
-            <span className="text-xl">👤</span>
-            <span className="font-black text-sm text-zinc-600 truncate max-w-[80px]">
-              {nama}
-            </span>
+        <div className="w-full px-4 pt-4 pb-2 flex justify-between items-center gap-2 bg-slate-900 z-50">
+          <div className="flex items-center gap-1.5 bg-slate-800 rounded-xl px-3 py-1.5">
+            <span className="text-slate-400 text-xs">👤</span>
+            <span className="font-semibold text-xs text-slate-200 truncate max-w-[72px]">{nama}</span>
           </div>
-          <div className="bg-white px-4 py-2 rounded-2xl shadow-lg border-2 border-indigo-400 flex items-center gap-2">
-            <span className="text-lg">⏱️</span>
-            <span className="font-mono font-black text-indigo-600">
-              {formatTime(seconds)}
-            </span>
+          <div className="flex items-center gap-1.5 bg-slate-800 rounded-xl px-3 py-1.5">
+            <span className="text-cyan-400 text-xs">⏱</span>
+            <span className="font-mono font-bold text-xs text-cyan-400">{formatTime(seconds)}</span>
           </div>
-          <div className="bg-[#FF8B8B] px-5 py-2 rounded-2xl shadow-lg border-2 border-white flex items-center gap-2 animate-bounce-short">
-            <span className="text-white font-black text-lg">{score}</span>
-            <span className="text-white/80 text-[10px] font-bold uppercase">
-              Points
-            </span>
+          <div className="flex items-center gap-1.5 bg-slate-800 rounded-xl px-3 py-1.5">
+            <span className="text-orange-400 text-xs">★</span>
+            <span className="font-bold text-xs text-orange-400">{score} pts</span>
           </div>
         </div>
       )}
 
-      {/* 1. COVER (SUPER CUTE) */}
+      {/* 1. COVER */}
       {step === "cover" && (
-        <div className="flex flex-col items-center justify-center h-full px-8 text-center animate-in fade-in zoom-in duration-500">
-          <div className="relative mb-8">
-            <div className="absolute inset-0 bg-yellow-300 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-            <div className="text-[120px] relative drop-shadow-xl leading-none">
-              🍱
-            </div>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 px-8 text-center">
+          <div className="mb-3 bg-slate-800 border border-slate-700 rounded-full px-4 py-1.5 text-cyan-400 text-xs font-semibold tracking-wide">
+            ✦ Petualangan Nutrisi
           </div>
-          <h1 className="text-4xl font-black mb-2 text-[#4D4D4D] leading-none uppercase italic">
-            Misi <br />{" "}
-            <span className="text-[#FF6B6B] text-5xl">Makan Sehat</span>
+          <div className="w-24 h-24 rounded-3xl bg-cyan-400 flex items-center justify-center text-5xl mb-6 shadow-[0_0_0_16px_rgba(34,211,238,0.08)]">
+            🥗
+          </div>
+          <h1 className="text-4xl font-bold text-white leading-tight mb-2">
+            Misi<br />
+            <span className="text-cyan-400">Makan Sehat</span>
           </h1>
-          <p className="text-zinc-400 font-bold mb-10 text-sm tracking-wide">
-            Petualangan nutrisi yang seru!
-          </p>
+          <p className="text-slate-400 text-sm mb-8">Pilih menu, raih poin, jadi juara</p>
           <button
             onClick={() => setStep("input")}
-            className="group relative bg-[#6BCB77] hover:bg-[#59b865] text-white px-12 py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#48a353] transition-all active:translate-y-1 active:shadow-none"
+            className="bg-cyan-400 hover:bg-cyan-300 text-slate-900 px-10 py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
           >
-            MULAI SEKARANG!
+            Mulai Sekarang →
           </button>
         </div>
       )}
 
       {/* 2. INPUT NAMA */}
       {step === "input" && (
-        <div className="flex mt-32 flex-col items-center justify-center h-full w-full px-10">
-          <div className="bg-white p-8 rounded-[3rem] shadow-2xl w-full border-4 border-[#FFD93D] relative">
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-5xl bg-white rounded-full p-2 shadow-md">
-              👋
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 px-6">
+          <div className="w-full max-w-sm">
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-3xl mx-auto mb-3">
+                👋
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Kenalan Yuk!</h2>
+              <p className="text-slate-400 text-sm mt-1">Siapkan dirimu untuk petualangan nutrisi</p>
             </div>
-            <h2 className="text-2xl font-black mb-6 mt-4 text-center">
-              Kenalan Yuk!
-            </h2>
-            <input
-              type="text"
-              className="w-full p-5 bg-[#FDFCF0] border-3 border-zinc-100 rounded-[2rem] mb-6 text-center text-xl font-black text-indigo-500 placeholder:text-zinc-300 outline-none focus:border-indigo-300 transition-all"
-              placeholder="Nama Kamu..."
-              onChange={(e) => setNama(e.target.value)}
-            />
-            <button
-              // disabled={!nama}
-              // onClick={() => setStep("comic")}
-              disabled={!nama}
-              onClick={startAdventure}
-              className="w-full bg-[#4D96FF] text-white py-5 rounded-[2rem] font-black text-lg shadow-[0_6px_0_#3678db] disabled:opacity-30 disabled:shadow-none transition-all active:translate-y-1 active:shadow-none"
-            >
-              GASSS! 🚀
-            </button>
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">
+                  Nama kamu
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 placeholder:text-slate-300 outline-none focus:border-cyan-400 focus:bg-white transition-all"
+                  placeholder="Tulis namamu di sini..."
+                  onChange={(e) => setNama(e.target.value)}
+                />
+                <p className="text-[10px] text-slate-400 mt-1.5 pl-1">Nama ini akan tampil di leaderboard</p>
+              </div>
+              <div className="bg-green-50 border border-green-100 rounded-2xl px-4 py-3 text-xs text-green-700 font-medium">
+                🏆 Raih poin tertinggi & masuk Top 10!
+              </div>
+              <button
+                disabled={!nama}
+                onClick={startAdventure}
+                className="w-full bg-slate-900 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold text-sm disabled:opacity-30 transition-all active:scale-95"
+              >
+                Gasss! 🚀
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 3. MODE KOMIK (STRETCHED FOR MOBILE) */}
+      {/* 3. MODE KOMIK */}
       {step === "comic" &&
         (isMobile ? (
-          <div
-            ref={interactiveRef}
-            className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden"
-          >
-            {/* AREA BUKU MOBILE */}
-            <div
-              className={`flex-1 flex items-center justify-center px-4 min-h-0 ${
-                isFinishPageMobile ? "pointer-events-none" : ""
-              }`}
-            >
+          <div ref={interactiveRef} className="flex md:hidden flex-col bg-slate-900" style={{ minHeight: "calc(100dvh - 52px)" }}>
+            {/* Buku */}
+            <div className={`flex-1 flex items-center justify-center px-3 pt-3 min-h-0 ${isFinishPageMobile ? "pointer-events-none" : ""}`}>
               <HTMLFlipBook
-                width={320}
-                height={480}
-                size="stretch"
-                minWidth={280}
-                maxWidth={500}
-                minHeight={400}
-                maxHeight={650}
-                usePortrait={true}
-                showCover={true}
-                mobileScrollSupport={true}
-                ref={bookRef}
-                className="comic-book shadow-2xl"
+                width={320} height={480} size="stretch"
+                minWidth={280} maxWidth={500} minHeight={400} maxHeight={650}
+                usePortrait={true} showCover={true} mobileScrollSupport={true}
+                ref={bookRef} className="comic-book rounded-2xl overflow-hidden shadow-2xl"
                 onFlip={(e) => setCurrentPage(e.data + 1)}
               >
                 {[...Array(totalHalaman)].map((_, i) => (
@@ -326,43 +259,29 @@ export default function Home() {
               </HTMLFlipBook>
             </div>
 
-            {/* INTERACTIVE DECK MOBILE */}
-            <div ref={interactiveRef} className="px-4 pb-6 shrink-0">
+            {/* Panel pilihan */}
+            <div ref={interactiveRef} className="px-3 pb-4 pt-3 shrink-0">
               {choiceData[currentPage] ? (
-                <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border-t-4 border-zinc-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
-                  <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-[0.3em] mb-1">
-                    Pilih Salah Satu
+                <div className="bg-slate-800 p-4 rounded-2xl flex flex-col gap-3">
+                  <div className="text-center text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                    Pilih langkah berikutnya
                   </div>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex gap-2">
                     <button
-                      onClick={() =>
-                        handleChoice(
-                          choiceData[currentPage].a.p,
-                          choiceData[currentPage].a.page,
-                        )
-                      }
-                      className="flex-1 flex items-center gap-2 p-3 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-3xl active:scale-95 transition-all"
+                      onClick={() => handleChoice(choiceData[currentPage].a.p, choiceData[currentPage].a.page)}
+                      className="flex-1 flex items-start gap-2 p-3 bg-blue-950 border border-blue-900 rounded-xl active:scale-95 transition-all text-left"
                     >
-                      <div className="w-8 h-8 shrink-0 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xs">
-                        A
-                      </div>
-                      <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">
+                      <div className="w-6 h-6 shrink-0 rounded-lg bg-blue-500 text-white flex items-center justify-center font-bold text-[10px]">A</div>
+                      <span className="text-slate-300 text-[10px] leading-snug font-medium">
                         {choiceData[currentPage].a.text}
                       </span>
                     </button>
                     <button
-                      onClick={() =>
-                        handleChoice(
-                          choiceData[currentPage].b.p,
-                          choiceData[currentPage].b.page,
-                        )
-                      }
-                      className="flex-1 flex items-center gap-2 p-3 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-3xl active:scale-95 transition-all"
+                      onClick={() => handleChoice(choiceData[currentPage].b.p, choiceData[currentPage].b.page)}
+                      className="flex-1 flex items-start gap-2 p-3 bg-green-950 border border-green-900 rounded-xl active:scale-95 transition-all text-left"
                     >
-                      <div className="w-8 h-8 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs">
-                        B
-                      </div>
-                      <span className="text-left font-bold text-zinc-700 text-[10px] leading-tight">
+                      <div className="w-6 h-6 shrink-0 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-[10px]">B</div>
+                      <span className="text-slate-300 text-[10px] leading-snug font-medium">
                         {choiceData[currentPage].b.text}
                       </span>
                     </button>
@@ -370,13 +289,12 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center min-h-[60px]">
-                  {(currentPage === totalHalaman ||
-                    [63, 67, 70].includes(currentPage)) && (
+                  {(currentPage === totalHalaman || [63, 67, 70].includes(currentPage)) && (
                     <button
                       onClick={saveScore}
-                      className="w-full bg-[#FF6B6B] text-white py-4 rounded-2xl font-black text-lg shadow-[0_5px_0_#d95252] animate-bounce-short"
+                      className="w-full bg-orange-500 hover:bg-orange-400 text-white py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
                     >
-                      {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
+                      {loading ? "Menyimpan..." : "🏁 Selesai & Simpan!"}
                     </button>
                   )}
                 </div>
@@ -384,22 +302,13 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="hidden md:flex flex-col h-[170dvh]  w-full overflow-hidden bg-zinc-50">
-            <div
-              className={`  ${isFinishPageDesktop ? "pointer-events-none" : ""} flex-1  flex items-center  justify-center py-0 p-4`}
-            >
+          <div className="hidden md:flex flex-col bg-slate-900" style={{ minHeight: "170dvh" }}>
+            <div className={`${isFinishPageDesktop ? "pointer-events-none" : ""} flex-1 flex items-center justify-center p-6`}>
               <HTMLFlipBook
-                width={400} // Desktop lebih besar
-                height={600}
-                size="stretch"
-                minWidth={400}
-                maxWidth={1000}
-                minHeight={500}
-                maxHeight={800}
-                usePortrait={false} // Desktop pakai mode 2 halaman (landscape)
-                showCover={true}
-                ref={bookRef}
-                className="comic-book shadow-2xl"
+                width={400} height={600} size="stretch"
+                minWidth={400} maxWidth={1000} minHeight={500} maxHeight={800}
+                usePortrait={false} showCover={true}
+                ref={bookRef} className="comic-book rounded-2xl overflow-hidden shadow-2xl"
                 onFlip={(e) => setCurrentPage(e.data + 1)}
               >
                 {[...Array(totalHalaman)].map((_, i) => (
@@ -408,60 +317,46 @@ export default function Home() {
               </HTMLFlipBook>
             </div>
 
-            {/* INTERACTIVE DECK DESKTOP */}
-            <div ref={interactiveRef} className="px-4">
-              <div className="max-w-4xl mx-auto">
+            <div ref={interactiveRef} className="px-6 pb-6">
+              <div className="max-w-2xl mx-auto">
                 {(() => {
-                  const activeData =
-                    choiceData[currentPage] || choiceData[currentPage + 1];
+                  const activeData = choiceData[currentPage] || choiceData[currentPage + 1];
                   if (activeData) {
                     return (
-                      <div className="bg-white p-6 rounded-[3rem] shadow-2xl border-t-4 border-zinc-50 flex flex-col gap-4 animate-in slide-in-from-bottom-5">
-                        <div className="text-center font-black text-xs text-slate-400 uppercase tracking-[0.4em] mb-1">
-                          Pilih Langkah Berikutnya
+                      <div className="bg-slate-800 p-6 rounded-3xl flex flex-col gap-4">
+                        <div className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          Pilih langkah berikutnya
                         </div>
-                        <div className="flex gap-6 justify-center">
+                        <div className="flex gap-4">
                           <button
-                            onClick={() =>
-                              handleChoice(activeData.a.p, activeData.a.page)
-                            }
-                            className="flex-1 flex items-center gap-4 p-5 bg-[#F0F7FF] border-2 border-[#D6E9FF] rounded-[2rem] hover:border-indigo-400 hover:bg-indigo-50 transition-all active:scale-95"
+                            onClick={() => handleChoice(activeData.a.p, activeData.a.page)}
+                            className="flex-1 flex items-start gap-4 p-5 bg-blue-950 border border-blue-900 rounded-2xl hover:border-blue-500 hover:bg-blue-900/50 transition-all active:scale-95 text-left"
                           >
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-xl shadow-lg">
-                              A
-                            </div>
-                            <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">
-                              {activeData.a.text}
-                            </span>
+                            <div className="w-10 h-10 shrink-0 rounded-xl bg-blue-500 text-white flex items-center justify-center font-bold text-lg">A</div>
+                            <span className="flex-1 text-slate-300 text-sm leading-snug font-medium pt-1">{activeData.a.text}</span>
                           </button>
                           <button
-                            onClick={() =>
-                              handleChoice(activeData.b.p, activeData.b.page)
-                            }
-                            className="flex-1 flex items-center gap-4 p-5 bg-[#F0FFF4] border-2 border-[#D6FFE0] rounded-[2rem] hover:border-emerald-400 hover:bg-emerald-50 transition-all active:scale-95"
+                            onClick={() => handleChoice(activeData.b.p, activeData.b.page)}
+                            className="flex-1 flex items-start gap-4 p-5 bg-green-950 border border-green-900 rounded-2xl hover:border-green-500 hover:bg-green-900/50 transition-all active:scale-95 text-left"
                           >
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xl shadow-lg">
-                              B
-                            </div>
-                            <span className="flex-1 text-left font-bold text-zinc-700 text-base leading-snug">
-                              {activeData.b.text}
-                            </span>
+                            <div className="w-10 h-10 shrink-0 rounded-xl bg-green-500 text-white flex items-center justify-center font-bold text-lg">B</div>
+                            <span className="flex-1 text-slate-300 text-sm leading-snug font-medium pt-1">{activeData.b.text}</span>
                           </button>
                         </div>
                       </div>
                     );
                   } else {
                     const isFinishPage = [totalHalaman, 63, 67, 70].some(
-                      (p) => p === currentPage || p === currentPage + 1,
+                      (p) => p === currentPage || p === currentPage + 1
                     );
                     if (isFinishPage) {
                       return (
-                        <div className="flex justify-center max-w-md mx-auto">
+                        <div className="flex justify-center max-w-sm mx-auto">
                           <button
                             onClick={saveScore}
-                            className="w-full bg-[#FF6B6B] text-white py-6 rounded-[2rem] font-black text-2xl shadow-[0_8px_0_#d95252] hover:bg-[#ff5a5a] active:translate-y-1 active:shadow-none transition-all"
+                            className="w-full bg-orange-500 hover:bg-orange-400 text-white py-5 rounded-2xl font-bold text-xl transition-all active:scale-95"
                           >
-                            {loading ? "MENYIMPAN..." : "🏁 SELESAI & SIMPAN!"}
+                            {loading ? "Menyimpan..." : "🏁 Selesai & Simpan!"}
                           </button>
                         </div>
                       );
@@ -474,134 +369,106 @@ export default function Home() {
           </div>
         ))}
 
+      {/* 4. POST FINISH */}
       {step === "postFinish" && (
-        <div className="flex flex-col items-center justify-center h-full w-full px-8 animate-in zoom-in duration-500">
-          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden border-4 border-[#FFD93D] flex flex-col">
-            <div className="p-6 text-center">
-              <h2 className="text-2xl font-black">{postFinish === "A" ? "Halaman A" : postFinish === "B" ? "Halaman B" : "Halaman C"}</h2>
-              <p className="text-sm text-zinc-500 mt-2">Terima kasih! Klik Next untuk melihat Leaderboard.</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 px-6">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-slate-900 p-6 text-center">
+              <h2 className="text-lg font-bold text-white">
+                {postFinish === "A" ? "Jalur A" : postFinish === "B" ? "Jalur B" : "Jalur C"}
+              </h2>
+              <p className="text-slate-400 text-xs mt-1">Klik Next untuk melihat Leaderboard</p>
             </div>
-
-            <div className="p-6 flex justify-center">
-              {(() => {
-                const map = { A: 62, B: 66, C: 69 };
-                const fileNum = map[postFinish] ?? 62;
-                return (
-                  <img
-                    src={`/komik/pages/Halaman ${postFinish}.png`}
-                    alt={`Halaman ${fileNum}`}
-                    className="w-full h-auto rounded-xl shadow-md object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                );
-              })()}
+            <div className="p-2  flex justify-center">
+              <img
+                src={`/komik/pages/Halaman ${postFinish}.png`}
+                alt={`Halaman ${postFinish}`}
+                className="w-full h-auto rounded-2xl object-cover"
+                onError={(e) => { e.target.style.display = "none"; }}
+              />
             </div>
-
-            <div className="p-6">
-              <button onClick={() => setStep("leaderboard")} className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black">Next</button>
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setStep("leaderboard")}
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95"
+              >
+                Next →
+              </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* 5. LEADERBOARD */}
       {step === "leaderboard" && (
-        <div className="flex flex-col items-center justify-center h-full w-full px-8 animate-in zoom-in duration-500">
-          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden border-4 border-[#FFD93D] flex flex-col max-h-[80vh]">
-            <div className="p-6 bg-[#FFD93D] text-center">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
-                🏆 10 Terbaik 🏆
-              </h2>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 px-6 py-10">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="bg-slate-900 p-6 text-center">
+              <div className="text-2xl mb-1">🏆</div>
+              <h2 className="text-lg font-bold text-white">10 Terbaik</h2>
+              <p className="text-slate-400 text-xs mt-1">Sesi ini</p>
             </div>
 
-            <div className="bg-zinc-100 p-3 flex gap-2 border-b border-zinc-200">
+            {/* Actions */}
+            <div className="px-4 py-3 flex gap-2 border-b border-slate-100">
               <button
                 onClick={downloadCSV}
-                className="flex-1 bg-blue-500 text-white py-2 rounded-xl text-[10px] font-black uppercase"
+                className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-xl text-[11px] font-bold transition-all"
               >
-                📥 Download Data
+                ↓ Download CSV
               </button>
               <button
                 onClick={resetDatabase}
-                className="flex-1 bg-red-500 text-white py-2 rounded-xl text-[10px] font-black uppercase"
+                className="flex-1 bg-red-50 hover:bg-red-100 text-red-500 py-2 rounded-xl text-[11px] font-bold transition-all"
               >
-                🗑️ Reset Leaderboard
+                ⚠ Reset Data
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {leaderboard.map((item, i) => (
                 <div
                   key={i}
-                  className={`flex justify-between items-center p-4 rounded-2xl border-2 ${
+                  className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
                     i === 0
-                      ? "bg-yellow-50 border-yellow-200 animate-pulse"
-                      : "bg-zinc-50 border-transparent"
+                      ? "bg-amber-50 border-amber-200"
+                      : "bg-slate-50 border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${
-                        i === 0
-                          ? "bg-yellow-400 text-white"
-                          : "bg-zinc-200 text-zinc-500"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-zinc-700 capitalize leading-tight">
-                        {item.nama}
-                      </span>
-                      {/* MENAMPILKAN DURASI */}
-                      <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1">
-                        ⏱️ {formatTime(item.duration || 0)}
-                      </span>
-                    </div>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                    i === 0 ? "bg-amber-400 text-white" : "bg-slate-200 text-slate-500"
+                  }`}>
+                    {i + 1}
                   </div>
-
-                  <div className="text-right">
-                    <span className="font-black text-[#4D96FF] text-lg block leading-none">
-                      {item.skor}
-                    </span>
-                    <span className="text-[8px] font-black text-zinc-300 uppercase tracking-widest">
-                      Pts
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-800 text-sm capitalize truncate">{item.nama}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">⏱ {formatTime(item.duration || 0)}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-bold text-slate-900 text-base leading-none">{item.skor}</p>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-wider mt-0.5">pts</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="p-6 border-t border-zinc-100">
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full py-4 bg-zinc-800 text-white rounded-[1.5rem] font-black text-sm uppercase transition-transform active:scale-95"
+                className="w-full py-3.5 bg-slate-900 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95"
               >
-                Main Lagi 🔄
+                Main Lagi ↺
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* CSS KHUSUS ANIMASI */}
       <style jsx global>{`
-        @keyframes bounce-short {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-4px);
-          }
-        }
-        .animate-bounce-short {
-          animation: bounce-short 2s ease-in-out infinite;
-        }
-        .comic-book {
-          background: white;
-        }
+        .comic-book { background: white; }
       `}</style>
     </div>
   );
