@@ -19,6 +19,7 @@ export default function Home() {
   const totalHalaman = 70;
   const finishPages = [63, 67, 72];
   const finishPagesDekstop = [62,66];
+  const [postFinish, setPostFinish] = useState(null); // 'A'|'B'|'C' to show intermediate page before leaderboard
 
   const isFinishPageMobile = finishPages.includes(currentPage);
 
@@ -73,8 +74,19 @@ export default function Home() {
         // Kirim 'waktu' ke database
         body: JSON.stringify({ nama, skor: score, duration: seconds }),
       });
-      fetchLeaderboard();
-      setStep("leaderboard");
+      fetchLeaderboard();       
+      // Decide post-finish page based on currentPage
+      const page = currentPage;
+      let post = null;
+      if ([62, 63].includes(page)) post = "A";
+      else if ([66, 67].includes(page)) post = "B";
+      else if ([69, 70].includes(page)) post = "C";
+      if (post) {
+        setPostFinish(post);
+        setStep("postFinish");
+      } else {
+        setStep("leaderboard");
+      }
       alert("Berhasil Menyimpan!");
     } catch (err) {
       console.error("Gagal simpan skor:", err);
@@ -461,6 +473,38 @@ export default function Home() {
             </div>
           </div>
         ))}
+
+      {step === "postFinish" && (
+        <div className="flex flex-col items-center justify-center h-full w-full px-8 animate-in zoom-in duration-500">
+          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden border-4 border-[#FFD93D] flex flex-col">
+            <div className="p-6 text-center">
+              <h2 className="text-2xl font-black">{postFinish === "A" ? "Halaman A" : postFinish === "B" ? "Halaman B" : "Halaman C"}</h2>
+              <p className="text-sm text-zinc-500 mt-2">Terima kasih! Klik Next untuk melihat Leaderboard.</p>
+            </div>
+
+            <div className="p-6 flex justify-center">
+              {(() => {
+                const map = { A: 62, B: 66, C: 69 };
+                const fileNum = map[postFinish] ?? 62;
+                return (
+                  <img
+                    src={`/komik/pages/Halaman ${postFinish}.png`}
+                    alt={`Halaman ${fileNum}`}
+                    className="w-full h-auto rounded-xl shadow-md object-cover"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
+                  />
+                );
+              })()}
+            </div>
+
+            <div className="p-6">
+              <button onClick={() => setStep("leaderboard")} className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black">Next</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {step === "leaderboard" && (
         <div className="flex flex-col items-center justify-center h-full w-full px-8 animate-in zoom-in duration-500">
